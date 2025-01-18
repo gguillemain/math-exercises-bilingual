@@ -19,6 +19,15 @@ check_command() {
     fi
 }
 
+# Function to ensure directory exists and is writable
+ensure_dir() {
+    local dir=$1
+    if [ ! -d "$dir" ]; then
+        mkdir -p "$dir"
+    fi
+    chmod 755 "$dir"
+}
+
 echo -e "${GREEN}Starting bilingual books generation...${NC}"
 
 # Check required commands
@@ -28,7 +37,7 @@ check_command pdflatex
 # Create a temporary directory for compilation
 TEMP_DIR="temp_build"
 rm -rf "$TEMP_DIR"
-mkdir -p "$TEMP_DIR"
+ensure_dir "$TEMP_DIR"
 
 # Generate the books using the Python script
 echo -e "${YELLOW}Generating French and German versions...${NC}"
@@ -41,37 +50,49 @@ compile_latex() {
     
     echo -e "${YELLOW}Compiling $lang version...${NC}"
     
-    # Create temp directory for this language
+    # Create and secure temp directory for this language
     local temp_lang_dir="$TEMP_DIR/$lang"
-    mkdir -p "$temp_lang_dir"
+    ensure_dir "$temp_lang_dir"
     
     # Create proper directory structure for aux files
-    mkdir -p "$temp_lang_dir/parallelperp/lesson"
-    mkdir -p "$temp_lang_dir/parallelperp/exercises"
+    ensure_dir "$temp_lang_dir/parallelperp/lesson"
+    ensure_dir "$temp_lang_dir/parallelperp/exercises"
     
     # Copy required files
     cp output/$lang/main.tex "$temp_lang_dir/"
     cp -r output/$lang/config "$temp_lang_dir/"
     cp -r output/$lang/parallelperp/* "$temp_lang_dir/parallelperp/"
     
+    # Set proper permissions for copied files
+    chmod 644 "$temp_lang_dir/main.tex"
+    chmod -R u+rw "$temp_lang_dir"
+    
+    # Create output directory if it doesn't exist
+    ensure_dir "$temp_lang_dir/output"
+    
     # Change to temp directory
     cd "$temp_lang_dir" || error_exit "Could not change to $temp_lang_dir directory"
     
-    # Run pdflatex multiple times
+    # Run pdflatex multiple times with proper paths and output directory
     for i in $(seq 1 $attempts); do
         echo -e "${YELLOW}LaTeX compilation attempt $i/${attempts}...${NC}"
-        TEXINPUTS=".:$temp_lang_dir:" pdflatex -interaction=nonstopmode -output-directory="$temp_lang_dir" main.tex > compile.log 2>&1
+        
+        # Set TEXINPUTS and run pdflatex
+        TEXINPUTS=".:$temp_lang_dir:" pdflatex \
+            -interaction=nonstopmode \
+            -output-directory="$temp_lang_dir/output" \
+            main.tex > "$temp_lang_dir/output/compile.log" 2>&1
         
         if [ $? -eq 0 ]; then
             echo -e "${GREEN}✓ $lang version compiled successfully${NC}"
-            mv main.pdf "../../math_book_$lang.pdf"
+            mv "output/main.pdf" "../../math_book_$lang.pdf"
             cd ../.. || error_exit "Could not return to root directory"
             return 0
         else
             if [ $i -eq $attempts ]; then
                 echo -e "${RED}✗ Error compiling $lang version${NC}"
                 echo -e "${YELLOW}Last few lines of the log:${NC}"
-                tail -n 20 compile.log
+                tail -n 20 "output/compile.log"
                 cd ../.. || error_exit "Could not return to root directory"
                 return 1
             fi
