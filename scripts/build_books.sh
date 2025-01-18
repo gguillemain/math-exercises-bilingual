@@ -45,21 +45,19 @@ compile_latex() {
     local temp_lang_dir="$TEMP_DIR/$lang"
     mkdir -p "$temp_lang_dir"
     
-    # Copy required files with proper structure
-    cp output/$lang/main.tex "$temp_lang_dir/"
-    cp -r output/$lang/config "$temp_lang_dir/"
-    
     # Create proper directory structure for aux files
     mkdir -p "$temp_lang_dir/parallelperp/lesson"
     mkdir -p "$temp_lang_dir/parallelperp/exercises"
     
-    # Copy chapter content
+    # Copy required files
+    cp output/$lang/main.tex "$temp_lang_dir/"
+    cp -r output/$lang/config "$temp_lang_dir/"
     cp -r output/$lang/parallelperp/* "$temp_lang_dir/parallelperp/"
     
     # Change to temp directory
     cd "$temp_lang_dir" || error_exit "Could not change to $temp_lang_dir directory"
     
-    # Run pdflatex multiple times with proper TEXINPUTS and output directory
+    # Run pdflatex multiple times
     for i in $(seq 1 $attempts); do
         echo -e "${YELLOW}LaTeX compilation attempt $i/${attempts}...${NC}"
         TEXINPUTS=".:$temp_lang_dir:" pdflatex -interaction=nonstopmode -output-directory="$temp_lang_dir" main.tex > compile.log 2>&1
