@@ -3,17 +3,24 @@
 
 % Document class and basic settings
 \documentclass[12pt,a4paper]{book}
+
+% Basic encoding and font settings
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{textcomp}
 
 % Language support
 \usepackage[french,german]{babel}
 \usepackage{csquotes}
 
-% Mathematics and symbols
+% Mathematics packages
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{mathrsfs}
 \usepackage{wasysym}
+\usepackage{mathcomp}
+\usepackage{cancel}
+\usepackage{fp}
 
 % Graphics and geometry
 \usepackage{pstricks,pstricks-add}
@@ -21,28 +28,63 @@
 \usepackage{pst-eucl}
 \usepackage{pst-node}
 \usepackage{pst-tree}
+\usepackage{pst-solides3d}
+\usepackage{pst-platon}
+\usepackage{auto-pst-pdf}
 \usepackage{graphicx}
-\usepackage{geometry}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
 
-% Colors
-\usepackage{xcolor}
-% Define custom colors
-\definecolor{orrange}{RGB}{255,235,205}
-\definecolor{violet}{RGB}{128,0,128}
+% TikZ libraries
+\usetikzlibrary{matrix,positioning,shapes,decorations.text,calc,decorations.pathmorphing,patterns}
 
 % Layout and design
+\usepackage[a4paper,top=1cm,left=1.5cm,bottom=1cm,right=1.5cm,heightrounded,includeheadfoot]{geometry}
 \usepackage{fancyhdr}
 \usepackage{multicol}
 \usepackage{enumitem}
 \usepackage{fancybox}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{hhline}
+\usepackage{dcolumn}
+\usepackage{setspace}
+\usepackage{lscape}
+\usepackage{numprint}
+\usepackage{xifthen}
+
+% Title formatting
+\usepackage[sf,sl,outermarks]{titlesec}
+\usepackage[Glenn]{fncychap}
+\usepackage{titletoc}
+\usepackage{tocloft}
+\usepackage{dashrule}
+
+% Colors
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{bclogo}
+\usepackage{soul}
+
+% Define custom colors
+\definecolor{jorange}{rgb}{0.179,0.628,0.898}
+\definecolor{violet}{rgb}{0.695,0.07,0.558}
+\definecolor{violetclair}{rgb}{0.998,0.5,1}
+\definecolor{violetfonce}{rgb}{0.3,0.03,0.238}
+\definecolor{vertclair}{rgb}{0.89,0.95,0.40}
+\definecolor{vert}{rgb}{0.552,0.764,0.509}
+\definecolor{vert1}{rgb}{0.79,1,0.43}
+\definecolor{orange}{rgb}{0.179,0.628,0.898}
+\definecolor{orrange}{rgb}{1,0.69,0}
+\definecolor{bleuclair}{rgb}{0.468,0.867,0.998}
+\definecolor{coulecon}{rgb}{0.758,0.805,0.945}
 
 % JSON parsing for translations
 \usepackage{xstring}
 \usepackage{catchfile}
 \usepackage{environ}
-
-% Custom commands for bilingual text formatting
-\newcommand{\guill}[1]{\og #1 \fg{}}
 
 % Translation system commands
 \newcommand{\loadTranslations}[1]{%
@@ -68,9 +110,6 @@
   \textbf{#1}%
 }
 
-% Custom environments for exercises and lessons
-\newcommand{\exo}[1]{\subsection*{#1}}
-
 % Teacher mode switch
 \newif\ifteacher
 \teacherfalse  % Default: student mode
@@ -91,58 +130,52 @@
 \fi
 
 % Custom box environments
-\newcommand{\cadreinfo}[2]{%
-    \begin{center}
-    \fbox{%
-        \begin{minipage}{0.95\textwidth}
-        \textbf{#1}\\
-        #2
-        \end{minipage}%
-    }%
-    \end{center}%
+\newcommand{\cadreinfo}[2]{
+\begin{bclogo}[logo=\bcinfo,couleur=coulecon, epBord=0, arrondi = 0.1, ombre = false, epOmbre = 0.15, couleurOmbre = black!30]{~\fboxsep 2pt\fcolorbox{coulecon}{cyan}{\textcolor{white}{#1}}}
+#2
+\end{bclogo}
 }
 
-\newcommand{\cadrecrayon}[2]{%
-    \begin{center}
-    \fbox{%
-        \begin{minipage}{0.95\textwidth}
-        \textbf{#1}\\
-        #2
-        \end{minipage}%
-    }%
-    \end{center}%
+\newcommand{\cadrecrayon}[2]{
+\begin{bclogo}[logo=\bccrayon,couleur=coulecon, epBord=0, arrondi = 0.1, ombre = false, epOmbre = 0.15, couleurOmbre = black!30]{~\fboxsep 2pt\fcolorbox{coulecon}{cyan}{\textcolor{white}{#1}}}
+#2
+\end{bclogo}
 }
 
-\newcommand{\cadrevok}[1]{%
-    \begin{center}
-    \fbox{%
-        \begin{minipage}{0.95\textwidth}
-        #1
-        \end{minipage}%
-    }%
-    \end{center}%
+\newcommand{\cadrevok}[1]{
+\begin{bclogo}[logo=\bcdallemagne,couleur = cyan, arrondi = 0.1, ombre = true, epOmbre = 0.15, couleurOmbre = black!30,barre=snake,couleurBarre=white,blur]{~\textcolor{white}{Vokabeln}}
+\noindent#1
+\end{bclogo}
 }
 
-% Custom symbols for geometry
-\newcommand{\perpbf}{\perp\!\!\!\perp}
-\newcommand{\parabf}{\parallel\!\!\!\parallel}
-
-% Grid settings for exercises
-\newcommand{\pappointetri}[3]{%
-    \multips(0,0)(#1,0){#2}{\psdot[dotscale=#3](0,0)}%
+\newcommand{\cadretrad}[1]{
+\begin{bclogo}[logo=\bcdallemagne,couleur = cyan, arrondi = 0.1,barre=snake,couleurBarre=white,blur,couleurBord=cyan]{~\textcolor{white}{Vokabeln}}
+\noindent#1
+\end{bclogo}
 }
 
-\newcommand{\pappointequad}[3]{%
-    \multips(0,0)(#1,0){#2}{\psdot[dotscale=#3](0,0)}%
-}
+% Custom math symbols and environments
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\D}{\mathbb{D}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\C}{\mathbb{C}}
 
-% Page layout settings
-\geometry{
-    a4paper,
-    margin=2cm,
-    includehead,
-    includefoot
-}
+\newcommand{\vect}[1]{\mathchoice%
+{\overrightarrow{\displaystyle\mathstrut#1\,\,}}%
+{\overrightarrow{\textstyle\mathstrut#1\,\,}}%
+{\overrightarrow{\scriptstyle\mathstrut#1\,\,}}%
+{\overrightarrow{\scriptscriptstyle\mathstrut#1\,\,}}}
+
+\def\Oij{$\left(\text{O},~\vect{\imath},~\vect{\jmath}\right)$}
+\def\Oijk{$\left(\text{O},~\vect{\imath},~ \vect{\jmath},~ \vect{k}\right)$}
+\def\Ouv{$\left(\text{O},~\vect{u},~\vect{v}\right)$}
+
+% Index configuration
+\usepackage{makeidx}
+\usepackage{imakeidx}
+\makeindex[program=makeindex,title=Index des mots utilisés dans le livre,columns=3,intoc=true,columnsep=10pt]
 
 % Header and footer style
 \pagestyle{fancy}
@@ -150,6 +183,25 @@
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0.4pt}
 
-% Index configuration
-\usepackage{makeidx}
-\makeindex
+% Custom commands for German math vocabulary
+\newcommand{\gv}{Größenvorstellung~}
+
+% Enumeration settings
+\renewcommand{\theenumi}{\textbf{\arabic{enumi}}}
+\renewcommand{\labelenumi}{\textbf{\theenumi.}}
+\renewcommand{\theenumii}{\textbf{\alph{enumii}}}
+\renewcommand{\labelenumii}{\textbf{\theenumii.}}
+
+% Custom presentation commands
+\newcommand\NomPrenom{\textbf{\textit{Nom :\hfill Prénom :\hfill Classe :}}\hspace*{2cm}}
+\newcommand*{\titre}[1]{{\centering\bfseries\scshape\Large#1\par}}
+\newcommand*{\ladate}[1]{\vspace{0.1cm}{\centering\itshape#1\par}\vspace{0.1cm}}
+
+% Exercise formatting
+\newcommand*{\ubungbox}[1]{\fboxsep 0pt\fcolorbox{yellow}{orrange}{#1}}
+\newcommand*{\exo}[1]{\vspace{0.35cm plus 0.15cm minus 0.15cm}\rule{1ex}{1ex}\hspace{1ex}{\ubungbox{\textbf{#1}}}\vspace{0.1cm plus 0.1cm minus 0.1cm}}
+\newcommand*{\aufgabe}[1]{\vspace{0.35cm plus 0.15cm minus 0.15cm}\rule{6ex}{1ex}\hspace{3ex}\textsc{\textbf{#1}}\vspace{0.1cm plus 0.1cm minus 0.1cm}}
+
+% German specific commands
+\newcommand{\beispiel}{\textit{\large\ding{253}Beispiel : }\smallskip}
+\newcommand{\bemerkung}{\textit{\large\ding{46}Bemerkung : }\smallskip}
