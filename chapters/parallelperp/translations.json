@@ -1,0 +1,44 @@
+{
+  "chapter_title": {
+    "de": "Senkrechte und Parallele Geraden",
+    "fr": "Droites perpendiculaires et parallèles"
+  },
+  "vocabulary": {
+    "perpendicular": {
+      "de": "senkrecht",
+      "fr": "perpendiculaire"
+    },
+    "parallel": {
+      "de": "parallel",
+      "fr": "parallèle"
+    },
+    "intersection_point": {
+      "de": "Schnittpunkt",
+      "fr": "point d'intersection"
+    },
+    "secant": {
+      "de": "sekant",
+      "fr": "sécante"
+    },
+    "ruler": {
+      "de": "Lineal",
+      "fr": "règle"
+    },
+    "set_square": {
+      "de": "Zeichendreieck",
+      "fr": "équerre"
+    }
+  },
+  "exercises": {
+    "ex1": {
+      "title": {
+        "de": "Senkrecht oder nicht... That is the question",
+        "fr": "Perpendiculaire ou non... That is the question"
+      },
+      "instructions": {
+        "de": "Kreise in rot die senkrechte Geraden, in grün die parallele Geraden und in blau die Geraden, die sich schneiden ein.",
+        "fr": "Entoure en rouge les droites perpendiculaires, en vert les droites parallèles et en bleu les droites qui se coupent."
+      }
+    }
+  }
+}
