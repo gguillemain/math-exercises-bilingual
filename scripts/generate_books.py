@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import json
 import os
-import re
 from pathlib import Path
 import shutil
 
@@ -15,15 +14,16 @@ class BilingualBookGenerator:
     def load_translations(self, chapter):
         """Load translations from JSON file for a specific chapter"""
         trans_file = self.chapters_dir / chapter / 'translations.json'
-        with open(trans_file, 'r', encoding='utf-8') as f:
-            return json.load(f)
-
-    def safe_replace(self, content, old, new):
-        """Safely replace text without regex interpretation"""
-        return content.replace(old, new)
+        try:
+            with open(trans_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading translations from {trans_file}: {e}")
+            return {}
 
     def process_chapter(self, chapter_name, language):
         """Process a single chapter for the specified language"""
+        print(f"Processing chapter {chapter_name} for {language}...")
         chapter_dir = self.chapters_dir / chapter_name
         translations = self.load_translations(chapter_name)
         
@@ -44,89 +44,114 @@ class BilingualBookGenerator:
 
     def process_tex_file(self, input_file, output_file, translations, language):
         """Process a single TeX file with translations"""
-        with open(input_file, 'r', encoding='utf-8') as f:
-            content = f.read()
+        print(f"Processing {input_file}...")
+        try:
+            with open(input_file, 'r', encoding='utf-8') as f:
+                content = f.read()
 
-        # Replace exercise titles
-        for ex_id, ex_data in translations.get('exercises', {}).items():
-            if 'title' in ex_data:
-                old = f'\\transTitle{{{ex_id}}}'
-                new = ex_data['title'][language]
-                content = self.safe_replace(content, old, new)
+            # Replace exercise titles and instructions
+            for ex_id, ex_data in translations.get('exercises', {}).items():
+                if 'title' in ex_data:
+                    content = content.replace(
+                        f'\\transTitle{{{ex_id}}}',
+                        ex_data['title'][language]
+                    )
+                if 'instructions' in ex_data:
+                    content = content.replace(
+                        f'\\transInstructions{{{ex_id}}}',
+                        ex_data['instructions'][language]
+                    )
 
-            if 'instructions' in ex_data:
-                old = f'\\transInstructions{{{ex_id}}}'
-                new = ex_data['instructions'][language]
-                content = self.safe_replace(content, old, new)
+            # Replace vocabulary
+            for term, trans_dict in translations.get('vocabulary', {}).items():
+                content = content.replace(
+                    f'\\trans{{{term}}}',
+                    trans_dict[language]
+                )
 
-        # Replace vocabulary
-        for term, trans_dict in translations.get('vocabulary', {}).items():
-            old = f'\\trans{{{term}}}'
-            new = trans_dict[language]
-            content = self.safe_replace(content, old, new)
+            # Ensure output directory exists
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Write processed content
+            with open(output_file, 'w', encoding='utf-8') as f:
+                f.write(content)
+                
+            print(f"Successfully processed {input_file}")
+        except Exception as e:
+            print(f"Error processing {input_file}: {e}")
+            raise
 
-        # Write processed content
-        output_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(content)
-
-    def copy_static_files(self):
+    def copy_static_files(self, language):
         """Copy static files to output directory"""
-        # Copy preamble
-        config_dir = self.base_dir / 'config'
-        for language in self.languages:
-            lang_config_dir = self.output_dir / language / 'config'
-            if config_dir.exists():
-                shutil.copytree(config_dir, lang_config_dir, dirs_exist_ok=True)
+        print(f"Copying static files for {language}...")
+        try:
+            # Copy config directory
+            src_config = self.base_dir / 'config'
+            dst_config = self.output_dir / language / 'config'
+            if src_config.exists():
+                shutil.copytree(src_config, dst_config, dirs_exist_ok=True)
+        except Exception as e:
+            print(f"Error copying static files: {e}")
+            raise
 
     def generate_main_tex(self, language):
         """Generate main.tex file for each language"""
-        output_main = self.output_dir / language / 'main.tex'
-        main_template = self.base_dir / 'main.tex'
-        
-        if main_template.exists():
-            with open(main_template, 'r', encoding='utf-8') as f:
-                template = f.read()
+        print(f"Generating main.tex for {language}...")
+        try:
+            output_main = self.output_dir / language / 'main.tex'
+            main_template = self.base_dir / 'main.tex'
+            
+            if main_template.exists():
+                with open(main_template, 'r', encoding='utf-8') as f:
+                    template = f.read()
 
-            # Modify for language
-            if language == 'fr':
-                title = "Mathématiques"
-                babel_option = "french"
-            else:
-                title = "Mathematik"
-                babel_option = "german"
+                # Modify for language
+                if language == 'fr':
+                    title = "Mathématiques"
+                    babel_option = "french"
+                else:
+                    title = "Mathematik"
+                    babel_option = "german"
 
-            content = template.replace('\\input{config/latex/preamble}',
-                                    f'\\input{{config/latex/preamble}}\n'
-                                    f'\\selectlanguage{{{babel_option}}}')
-            content = content.replace('Mathematik -- Mathématiques', title)
+                content = template.replace('\\input{config/latex/preamble}',
+                                        f'\\input{{config/latex/preamble}}\n'
+                                        f'\\selectlanguage{{{babel_option}}}')
+                content = content.replace('Mathematik -- Mathématiques', title)
 
-            # Write output
-            output_main.parent.mkdir(parents=True, exist_ok=True)
-            with open(output_main, 'w', encoding='utf-8') as f:
-                f.write(content)
+                output_main.parent.mkdir(parents=True, exist_ok=True)
+                with open(output_main, 'w', encoding='utf-8') as f:
+                    f.write(content)
+        except Exception as e:
+            print(f"Error generating main.tex: {e}")
+            raise
 
     def generate_books(self):
         """Generate both French and German versions of the book"""
-        print("Cleaning output directory...")
-        if self.output_dir.exists():
-            shutil.rmtree(self.output_dir)
-        self.output_dir.mkdir(parents=True)
+        print("Starting book generation...")
+        try:
+            # Clean output directory
+            if self.output_dir.exists():
+                shutil.rmtree(self.output_dir)
+            self.output_dir.mkdir(parents=True)
 
-        for language in self.languages:
-            print(f"Generating {language} version...")
+            for language in self.languages:
+                print(f"\nGenerating {language} version...")
+                
+                # Process each chapter
+                for chapter_dir in self.chapters_dir.iterdir():
+                    if chapter_dir.is_dir():
+                        self.process_chapter(chapter_dir.name, language)
+                
+                # Copy static files
+                self.copy_static_files(language)
+                
+                # Generate main.tex
+                self.generate_main_tex(language)
             
-            # Process each chapter
-            for chapter_dir in self.chapters_dir.iterdir():
-                if chapter_dir.is_dir():
-                    self.process_chapter(chapter_dir.name, language)
-            
-            # Generate main.tex
-            self.generate_main_tex(language)
-
-        # Copy static files
-        self.copy_static_files()
-        print("Generation completed successfully.")
+            print("\nBook generation completed successfully!")
+        except Exception as e:
+            print(f"Error during book generation: {e}")
+            raise
 
 if __name__ == "__main__":
     generator = BilingualBookGenerator(".")
