@@ -27,6 +27,7 @@ check_command pdflatex
 
 # Create a temporary directory for compilation
 TEMP_DIR="temp_build"
+rm -rf "$TEMP_DIR"
 mkdir -p "$TEMP_DIR"
 
 # Generate the books using the Python script
@@ -44,8 +45,10 @@ compile_latex() {
     local temp_lang_dir="$TEMP_DIR/$lang"
     mkdir -p "$temp_lang_dir"
     
-    # Copy all necessary files to temp directory
-    cp -r output/$lang/* "$temp_lang_dir/"
+    # Copy required files
+    cp output/$lang/main.tex "$temp_lang_dir/"
+    cp -r output/$lang/config "$temp_lang_dir/"
+    cp -r output/$lang/parallelperp "$temp_lang_dir/"
     
     # Change to temp directory
     cd "$temp_lang_dir" || error_exit "Could not change to $temp_lang_dir directory"
@@ -53,25 +56,23 @@ compile_latex() {
     # Run pdflatex multiple times
     for i in $(seq 1 $attempts); do
         echo -e "${YELLOW}LaTeX compilation attempt $i/${attempts}...${NC}"
-        pdflatex -interaction=nonstopmode main.tex > compile.log 2>&1
+        TEXINPUTS=".:" pdflatex -interaction=nonstopmode main.tex > compile.log 2>&1
         
         if [ $? -eq 0 ]; then
             echo -e "${GREEN}✓ $lang version compiled successfully${NC}"
             mv main.pdf "../../math_book_$lang.pdf"
-            break
+            cd ../.. || error_exit "Could not return to root directory"
+            return 0
         else
             if [ $i -eq $attempts ]; then
                 echo -e "${RED}✗ Error compiling $lang version${NC}"
                 echo -e "${YELLOW}Last few lines of the log:${NC}"
                 tail -n 20 compile.log
-                cd ../..
+                cd ../.. || error_exit "Could not return to root directory"
                 return 1
             fi
         fi
     done
-    
-    cd ../..
-    return 0
 }
 
 # Compile both versions
