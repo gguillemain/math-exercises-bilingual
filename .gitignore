@@ -1,0 +1,5 @@
+echo "*.pdf
+output/
+*.aux
+*.log
+*.toc" >> .gitignore
