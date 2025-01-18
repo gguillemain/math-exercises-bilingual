@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import re
 
 class BilingualBookGenerator:
     def __init__(self, base_dir):
@@ -34,13 +35,21 @@ class BilingualBookGenerator:
         # Process lesson
         lesson_file = chapter_dir / 'lesson' / 'lesson.tex'
         if lesson_file.exists():
-            self.process_tex_file(lesson_file, output_chapter_dir / 'lesson.tex', translations, language)
+            self.process_tex_file(lesson_file, output_chapter_dir / 'lesson' / 'lesson.tex', translations, language)
 
         # Process exercises
         exercises_dir = chapter_dir / 'exercises'
         if exercises_dir.exists():
             for ex_file in exercises_dir.glob('*.tex'):
-                self.process_tex_file(ex_file, output_chapter_dir / ex_file.name, translations, language)
+                out_ex_file = output_chapter_dir / 'exercises' / ex_file.name
+                out_ex_file.parent.mkdir(parents=True, exist_ok=True)
+                self.process_tex_file(ex_file, out_ex_file, translations, language)
+
+    def adjust_paths(self, content):
+        """Adjust paths in LaTeX files to be relative to the build directory"""
+        # Remove 'chapters/' from include/input paths
+        content = re.sub(r'\\(?:include|input)\{chapters/', r'\\\\1{', content)
+        return content
 
     def process_tex_file(self, input_file, output_file, translations, language):
         """Process a single TeX file with translations"""
@@ -48,6 +57,9 @@ class BilingualBookGenerator:
         try:
             with open(input_file, 'r', encoding='utf-8') as f:
                 content = f.read()
+
+            # Adjust paths in the content
+            content = self.adjust_paths(content)
 
             # Replace exercise titles and instructions
             for ex_id, ex_data in translations.get('exercises', {}).items():
@@ -113,9 +125,12 @@ class BilingualBookGenerator:
                     title = "Mathematik"
                     babel_option = "german"
 
+                # Adjust paths in the template
+                template = self.adjust_paths(template)
+                
                 content = template.replace('\\input{config/latex/preamble}',
-                                        f'\\input{{config/latex/preamble}}\n'
-                                        f'\\selectlanguage{{{babel_option}}}')
+                                      f'\\input{{config/latex/preamble}}\\n'
+                                      f'\\selectlanguage{{{babel_option}}}')
                 content = content.replace('Mathematik -- Mathématiques', title)
 
                 output_main.parent.mkdir(parents=True, exist_ok=True)
