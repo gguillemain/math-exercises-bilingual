@@ -25,35 +25,45 @@ echo -e "${GREEN}Starting bilingual books generation...${NC}"
 check_command python3
 check_command pdflatex
 
+# Create a temporary directory for compilation
+TEMP_DIR="temp_build"
+rm -rf "$TEMP_DIR"
+mkdir -p "$TEMP_DIR"
+
+# Generate the books using the Python script
+echo -e "${YELLOW}Generating French and German versions...${NC}"
+python3 scripts/generate_books.py || error_exit "Book generation failed"
+
 # Function to compile a LaTeX file
 compile_latex() {
     local lang=$1
-    local attempts=2  # Number of compilation attempts
+    local attempts=3  # Increased number of compilation attempts
     
     echo -e "${YELLOW}Compiling $lang version...${NC}"
     
-    # Create base temp directory
-    local base_temp_dir="temp_build"
-    local temp_lang_dir="$base_temp_dir/$lang"
-    
-    # Clean and recreate directories
-    rm -rf "$temp_lang_dir"
+    # Create temp directory for this language
+    local temp_lang_dir="$TEMP_DIR/$lang"
     mkdir -p "$temp_lang_dir"
     
-    # Copy all required files to temp directory
-    cp -r output/$lang/* "$temp_lang_dir/"
+    # Copy required files
+    cp output/$lang/main.tex "$temp_lang_dir/"
+    cp -r output/$lang/config "$temp_lang_dir/"
+    cp -r output/$lang/parallelperp "$temp_lang_dir/"
     
     # Change to temp directory
     cd "$temp_lang_dir" || error_exit "Could not change to $temp_lang_dir directory"
     
-    # Run pdflatex multiple times
+    # Run pdflatex multiple times with specific options for PSTricks
     for i in $(seq 1 $attempts); do
         echo -e "${YELLOW}LaTeX compilation attempt $i/${attempts}...${NC}"
-        # Run pdflatex in the current directory
-        pdflatex -interaction=nonstopmode main.tex > pdflatex.log 2>&1
+        # First run with --shell-escape for PSTricks
+        TEXINPUTS=".:./config:./parallelperp:" pdflatex --shell-escape -interaction=nonstopmode main.tex > compile.log 2>&1
         
-        # Check if PDF was actually created, regardless of exit status
-        if [ -f main.pdf ]; then
+        if [ $? -eq 0 ]; then
+            if [ $i -eq 1 ]; then
+                # Run again for cross-references and PSTricks
+                TEXINPUTS=".:./config:./parallelperp:" pdflatex --shell-escape -interaction=nonstopmode main.tex >> compile.log 2>&1
+            fi
             echo -e "${GREEN}✓ $lang version compiled successfully${NC}"
             mv main.pdf "../../math_book_$lang.pdf"
             cd ../.. || error_exit "Could not return to root directory"
@@ -62,11 +72,7 @@ compile_latex() {
             if [ $i -eq $attempts ]; then
                 echo -e "${RED}✗ Error compiling $lang version${NC}"
                 echo -e "${YELLOW}Last few lines of the log:${NC}"
-                if [ -f pdflatex.log ]; then
-                    tail -n 20 pdflatex.log
-                else
-                    echo "No log file found"
-                fi
+                tail -n 20 compile.log
                 cd ../.. || error_exit "Could not return to root directory"
                 return 1
             fi
@@ -74,21 +80,13 @@ compile_latex() {
     done
 }
 
-# Clean any existing temp files
-rm -rf temp_build
-mkdir -p temp_build
-
-# Generate the books using the Python script
-echo -e "${YELLOW}Generating French and German versions...${NC}"
-python3 scripts/generate_books.py || error_exit "Book generation failed"
-
 # Compile both versions
 compile_latex "fr" || error_exit "French compilation failed"
 compile_latex "de" || error_exit "German compilation failed"
 
 # Clean up
 echo -e "${YELLOW}Cleaning up temporary files...${NC}"
-rm -rf temp_build
+rm -rf "$TEMP_DIR"
 
 echo -e "${GREEN}Done!${NC}"
 echo "Generated PDFs:"
