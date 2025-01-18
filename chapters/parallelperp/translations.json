@@ -3,30 +3,14 @@
     "de": "Senkrechte und Parallele Geraden",
     "fr": "Droites perpendiculaires et parallèles"
   },
-  "vocabulary": {
-    "perpendicular": {
-      "de": "senkrecht",
-      "fr": "perpendiculaire"
+  "sections": {
+    "remember": {
+      "de": "Erinnere Dich",
+      "fr": "Rappels"
     },
-    "parallel": {
-      "de": "parallel",
-      "fr": "parallèle"
-    },
-    "intersection_point": {
-      "de": "Schnittpunkt",
-      "fr": "point d'intersection"
-    },
-    "secant": {
-      "de": "sekant",
-      "fr": "sécante"
-    },
-    "ruler": {
-      "de": "Lineal",
-      "fr": "règle"
-    },
-    "set_square": {
-      "de": "Zeichendreieck",
-      "fr": "équerre"
+    "exercises": {
+      "de": "Senkrechte und Parallele",
+      "fr": "Perpendiculaires et parallèles"
     }
   },
   "exercises": {
@@ -36,9 +20,35 @@
         "fr": "Perpendiculaire ou non... That is the question"
       },
       "instructions": {
-        "de": "Kreise in rot die senkrechte Geraden, in grün die parallele Geraden und in blau die Geraden, die sich schneiden ein.",
-        "fr": "Entoure en rouge les droites perpendiculaires, en vert les droites parallèles et en bleu les droites qui se coupent."
+        "de": "Kreise in rot die senkrechte Geraden, in grün die parallele Geraden und in blau die Geraden, die sich schneiden ein. Überprüfe mit dem Zeichendreieck.",
+        "fr": "Entoure en rouge les droites perpendiculaires, en vert les droites parallèles et en bleu les droites sécantes. Vérifie avec l'équerre."
       }
+    }
+  },
+  "vocabulary": {
+    "perpendicular": {
+      "de": "senkrecht",
+      "fr": "perpendiculaire"
+    },
+    "parallel": {
+      "de": "parallel",
+      "fr": "parallèle"
+    },
+    "secant": {
+      "de": "sich schneiden",
+      "fr": "sécante"
+    },
+    "set_square": {
+      "de": "Zeichendreieck",
+      "fr": "équerre"
+    },
+    "ruler": {
+      "de": "Lineal",
+      "fr": "règle"
+    },
+    "verify": {
+      "de": "überprüfen",
+      "fr": "vérifier"
     }
   }
 }
