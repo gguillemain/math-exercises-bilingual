@@ -37,43 +37,91 @@
 \usepackage{fancybox}
 \usepackage{cursive}
 
+% JSON parsing for translations
+\usepackage{xstring}
+\usepackage{catchfile}
+\usepackage{environ}
+
 % Custom commands for bilingual text formatting
 \newcommand{\guill}[1]{\og #1 \fg{}}
+
+% Translation system commands
+\newcommand{\loadTranslations}[1]{%
+  \IfFileExists{#1}{%
+    \CatchFileDef{\translations}{#1}{}%
+  }{%
+    \typeout{Warning: Translation file #1 not found}%
+  }%
+}
+
+\newcommand{\trans}[1]{%
+  % Cette commande sera remplacée par le script Python
+  \textbf{#1}%
+}
+
+\newcommand{\transTitle}[1]{%
+  % Cette commande sera remplacée par le script Python
+  \textbf{#1}%
+}
+
+\newcommand{\transInstructions}[1]{%
+  % Cette commande sera remplacée par le script Python
+  \textbf{#1}%
+}
 
 % Custom environments for exercises and lessons
 \newcommand{\exo}[1]{\subsection*{#1}}
 
+% Teacher mode switch
+\newif\ifteacher
+\teacherfalse  % Default: student mode
+%\teachertrue  % Uncomment for teacher mode
+
+% Solution environment
+\ifteacher
+  \newenvironment{solution}{%
+    \begin{center}
+    \begin{minipage}{0.95\textwidth}
+    \textbf{Solution :}\\
+  }{%
+    \end{minipage}
+    \end{center}
+  }
+\else
+  \NewEnviron{solution}{}  % Hide solutions in student mode
+\fi
+
 % Custom box environments
-\newcommand{\cadreinfo}[2]{
+\newcommand{\cadreinfo}[2]{%
     \begin{center}
-    \fbox{
+    \fbox{%
         \begin{minipage}{0.95\textwidth}
         \textbf{#1}\\
         #2
-        \end{minipage}
-    }
-    \end{center}
+        \end{minipage}%
+    }%
+    \end{center}%
 }
 
-\newcommand{\cadrecrayon}[2]{
+\newcommand{\cadrecrayon}[2]{%
     \begin{center}
-    \fbox{
+    \fbox{%
         \begin{minipage}{0.95\textwidth}
         \textbf{#1}\\
         #2
-        \end{minipage}
-    }
-    \end{center}
+        \end{minipage}%
+    }%
+    \end{center}%
 }
 
-\newcommand{\cadrevok}[1]{
+\newcommand{\cadrevok}[1]{%
     \begin{center}
-    \fbox{
+    \fbox{%
         \begin{minipage}{0.95\textwidth}
         #1
-        \end{minipage}
-    }
-    \end{center}
+        \end{minipage}%
+    }%
+    \end{center}%
 }
 
 % Custom symbols for geometry
@@ -81,12 +129,12 @@
 \newcommand{\parabf}{\parallel\!\!\!\parallel}
 
 % Grid settings for exercises
-\newcommand{\pappointetri}[3]{
-    \multips(0,0)(#1,0){#2}{\psdot[dotscale=#3](0,0)}
+\newcommand{\pappointetri}[3]{%
+    \multips(0,0)(#1,0){#2}{\psdot[dotscale=#3](0,0)}%
 }
 
-\newcommand{\pappointequad}[3]{
-    \multips(0,0)(#1,0){#2}{\psdot[dotscale=#3](0,0)}
+\newcommand{\pappointequad}[3]{%
+    \multips(0,0)(#1,0){#2}{\psdot[dotscale=#3](0,0)}%
 }
 
 % Page layout settings
