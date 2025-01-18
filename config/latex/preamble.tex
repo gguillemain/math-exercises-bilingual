@@ -1,0 +1,108 @@
+% !TEX root = main.tex
+% Configuration file for bilingual math textbook
+
+% Document class and basic settings
+\documentclass[12pt,a4paper]{book}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+% Language support
+\usepackage[french,german]{babel}
+\usepackage{csquotes}
+
+% Mathematics and symbols
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{mathrsfs}
+\usepackage{wasysym}
+
+% Graphics and geometry
+\usepackage{pstricks,pstricks-add}
+\usepackage{pst-plot}
+\usepackage{pst-eucl}
+\usepackage{pst-node}
+\usepackage{pst-tree}
+\usepackage{graphicx}
+\usepackage{geometry}
+
+% Colors
+\usepackage{xcolor}
+% Define custom colors
+\definecolor{orrange}{RGB}{255,235,205}
+\definecolor{violet}{RGB}{128,0,128}
+
+% Layout and design
+\usepackage{fancyhdr}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage{fancybox}
+\usepackage{cursive}
+
+% Custom commands for bilingual text formatting
+\newcommand{\guill}[1]{\og #1 \fg{}}
+
+% Custom environments for exercises and lessons
+\newcommand{\exo}[1]{\subsection*{#1}}
+
+% Custom box environments
+\newcommand{\cadreinfo}[2]{
+    \begin{center}
+    \fbox{
+        \begin{minipage}{0.95\textwidth}
+        \textbf{#1}\\
+        #2
+        \end{minipage}
+    }
+    \end{center}
+}
+
+\newcommand{\cadrecrayon}[2]{
+    \begin{center}
+    \fbox{
+        \begin{minipage}{0.95\textwidth}
+        \textbf{#1}\\
+        #2
+        \end{minipage}
+    }
+    \end{center}
+}
+
+\newcommand{\cadrevok}[1]{
+    \begin{center}
+    \fbox{
+        \begin{minipage}{0.95\textwidth}
+        #1
+        \end{minipage}
+    }
+    \end{center}
+}
+
+% Custom symbols for geometry
+\newcommand{\perpbf}{\perp\!\!\!\perp}
+\newcommand{\parabf}{\parallel\!\!\!\parallel}
+
+% Grid settings for exercises
+\newcommand{\pappointetri}[3]{
+    \multips(0,0)(#1,0){#2}{\psdot[dotscale=#3](0,0)}
+}
+
+\newcommand{\pappointequad}[3]{
+    \multips(0,0)(#1,0){#2}{\psdot[dotscale=#3](0,0)}
+}
+
+% Page layout settings
+\geometry{
+    a4paper,
+    margin=2cm,
+    includehead,
+    includefoot
+}
+
+% Header and footer style
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% Index configuration
+\usepackage{makeidx}
+\makeindex
