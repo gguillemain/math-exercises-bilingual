@@ -52,7 +52,8 @@ compile_latex() {
         # Run pdflatex in the current directory
         pdflatex -interaction=nonstopmode main.tex > pdflatex.log 2>&1
         
-        if [ $? -eq 0 ]; then
+        # Check if PDF was actually created, regardless of exit status
+        if [ -f main.pdf ]; then
             echo -e "${GREEN}✓ $lang version compiled successfully${NC}"
             mv main.pdf "../../math_book_$lang.pdf"
             cd ../.. || error_exit "Could not return to root directory"
